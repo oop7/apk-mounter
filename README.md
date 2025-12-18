@@ -35,11 +35,12 @@ It leverages Linux bind mount technology via root access (Magisk, KernelSU, or A
 *   **Android 6.0+**: Supports Marshmallow and newer versions.
 
 ### Installation
-1.  Download the latest APK from the [**Releases Page**](https://github.com/oop7/apk-mounter/releases).
+1.  Download the latest APK from the [**Releases Page**](https://github.com/oop7/apk-mounter/releases/latest).
     *   Choose the version matching your device architecture (`arm64-v8a`, `armeabi-v7a`, `x86_64`).
     *   If unsure, download the `universal` version.
 2.  Install the downloaded APK on your device.
 3.  Open the app and grant **Root Access** when prompted.
+  if you using KernelSU or KernelSU Next, you might need to restart the app after granting root.
 
 ## How to Use
 
