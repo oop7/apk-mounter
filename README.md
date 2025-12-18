@@ -2,7 +2,7 @@
 
 # APK Mounter
 
-**Seamlessly replace installed apps with custom APKs on rooted Android devices.**
+**A root utility to bind-mount custom APKs over installed apps, preserving data and signatures..**
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/oop7/apk-mounter?style=for-the-badge&color=blue)
 [![License](https://img.shields.io/github/license/oop7/apk-mounter?style=for-the-badge&color=green)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://www.android.com/)
