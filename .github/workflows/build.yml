@@ -1,0 +1,126 @@
+name: Build APK Mounter
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version name for the release (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.27.1'
+          cache: true
+          
+      - name: Cache Gradle
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Decode Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/app/keystore.jks
+          fi
+
+      - name: Create Release Directory
+        run: mkdir -p build/releases
+
+      - name: Build Universal APK
+        run: flutter build apk --release
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_ENTRY_ALIAS: ${{ secrets.KEYSTORE_ENTRY_ALIAS }}
+          KEYSTORE_ENTRY_PASSWORD: ${{ secrets.KEYSTORE_ENTRY_PASSWORD }}
+
+      - name: Move Universal APK
+        run: mv build/app/outputs/flutter-apk/app-release.apk build/releases/apk-mounter-universal-v${{ github.event.inputs.version }}.apk
+
+      - name: Build Split APKs
+        run: flutter build apk --release --split-per-abi
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_ENTRY_ALIAS: ${{ secrets.KEYSTORE_ENTRY_ALIAS }}
+          KEYSTORE_ENTRY_PASSWORD: ${{ secrets.KEYSTORE_ENTRY_PASSWORD }}
+
+      - name: Move Split APKs
+        run: |
+          cd build/app/outputs/flutter-apk/
+          for file in app-*-release.apk; do
+            # Remove 'app-' prefix and '-release' suffix, add version
+            suffix="-v${{ github.event.inputs.version }}.apk"
+            new_name="apk-mounter-${file/app-/}"
+            new_name="${new_name/-release.apk/$suffix}"
+            mv "$file" "../../../releases/$new_name"
+          done
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-mounter-${{ steps.date.outputs.date }}
+          path: build/releases/*.apk
+          retention-days: 30
+
+      - name: Get version
+        id: version
+        run: echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
+          draft: true
+          prerelease: false
+          files: build/releases/*.apk
+          body: |
+            ## APK Mounter v${{ steps.version.outputs.version }}
+            
+            ### Installation
+            1. Download the APK file
+            2. Install on your rooted Android device
+            3. Grant root permissions when prompted
+            
+            ### Features
+            - Mount APK files using root access
+            - Persistent mounting across reboots
+            - List and manage mounted apps
+            - Easy unmount functionality
+            
+            **Requirements:** Rooted Android device with Magisk or similar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,35 @@
+name: apk_mounter
+description: "Application to mount APK files on rooted Android devices."
+version: 1.0.0+1
+publish_to: none
+
+environment:
+  sdk: '>=3.6.0'
+  flutter: '>=3.27.1'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  device_apps:
+    git:
+      url: https://github.com/ponces/flutter_plugin_device_apps
+      ref: 0609662324b9e00931fccfa87e9e1b00b7610907
+  device_info_plus: ^11.3.0
+  dynamic_color: 1.7.0
+  file_picker: ^10.1.9
+  flutter_localizations:
+    sdk: flutter
+  path_provider: ^2.1.5
+  permission_handler: ^12.0.0
+  provider: ^6.1.2
+  root:
+    git:
+      url: https://github.com/validcube/root
+      ref: 68e5678a535a2a3344828a14a39017fa74b9098c
+  shared_preferences: ^2.5.2
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

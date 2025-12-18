@@ -1,0 +1,33 @@
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+linux/
+macos/
+windows/
+web/
+ios/
+
+# Android
+*.jks
+*.keystore
+android/local.properties
+android/.gradle/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/key.properties
+
+# IDE
+.idea/
+*.iml
+*.iws
+.vscode/
+
+# Misc
+*.log
+*.swp
+.DS_Store
