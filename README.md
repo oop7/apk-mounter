@@ -35,7 +35,7 @@ It leverages Linux bind mount technology via root access (Magisk, KernelSU, or A
 *   **Android 6.0+**: Supports Marshmallow and newer versions.
 
 ### Installation
-1.  Download the latest APK from the [**Releases Page**](https://github.com/ReVanced/revanced-manager/releases).
+1.  Download the latest APK from the [**Releases Page**](https://github.com/oop7/apk-mounter/releases).
 2.  Install `apk-mounter-universal-vX.X.X.apk` on your device.
 3.  Open the app and grant **Root Access** when prompted.
 
@@ -56,7 +56,7 @@ It leverages Linux bind mount technology via root access (Magisk, KernelSU, or A
 
 ## Credits
 
-*   Based on the mounting logic from [ReVanced Manager](https://github.com/revanced/revanced-manager).
+*   Implementation and mounting logic derived from [ReVanced Manager](https://github.com/ReVanced/revanced-manager), licensed under [GPL v3.0](https://github.com/ReVanced/revanced-manager/blob/main/LICENSE).
 *   Built with [Flutter](https://flutter.dev).
 
 ## License
