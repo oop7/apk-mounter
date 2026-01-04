@@ -1,8 +1,6 @@
-<div align="center">
-
 # APK Mounter
 
-**A root utility to bind-mount custom APKs over installed apps, preserving data and signatures.**
+**A root utility to bind-mount unsigned and custom APKs over installed apps, preserving data and signatures.**
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/oop7/apk-mounter?style=for-the-badge&color=blue)
 [![License](https://img.shields.io/github/license/oop7/apk-mounter?style=for-the-badge&color=green)](LICENSE)
@@ -11,22 +9,25 @@
 
 </div>
 
-
 ## About
 
-**APK Mounter** is a specialized utility for rooted Android devices. It allows you to "mount" a custom APK file (like a ReVanced patched application) over an existing installed app without uninstalling the original. This preserves your data and login sessions while letting you use the modified version.
+**APK Mounter** is a specialized utility for rooted Android devices. It allows you to "mount" a custom APK file (such as a modified, patched, or **unsigned** application) over an existing installed app without uninstalling the original.
 
-It leverages Linux bind mount technology via root access (Magisk, KernelSU, or APatch) to overlay your file on top of the system path.
+By leveraging Linux bind-mount technology via root access (Magisk, KernelSU, or APatch), the tool overlays your file on top of the system path. This preserves your data, databases, and login sessions while allowing the system to execute your modified code.
+
+## Screenshots
+
+<img src="https://github.com/user-attachments/assets/75ba09eb-958b-467e-bda4-252fe47376e7" width="320" alt="APK Mounter Main UI" />
 
 ## Key Features
 
+*   **Mount Unsigned APKs**: Mount APKs that have broken signatures or are completely unsigned.
+*   **Signature Bypass**: Run modified apps without package conflicts; the system continues to see the original valid signature.
 *   **Root Detection**: Fully compatible with Magisk, KernelSU, and APatch.
-*   **Signature Bypass**: Mount self-signed or differently signed APKs without conflicts.
 *   **Seamless Mounting**: Overlay any APK instantly without data loss.
 *   **Auto-Detection**: Smartly identifies the package name from your selected APK.
 *   **Persistent**: Mounts survive reboots automatically (via `service.d`).
-*   **Material You**: Beautiful UI that adapts to your system colors (Android 12+).
-*   **Theme Support**: Native Dark and Light mode support.
+*   **Material You**: Modern UI that adapts to your system colors (Android 12+) with native Dark/Light mode.
 
 ## Getting Started
 
@@ -40,11 +41,11 @@ It leverages Linux bind mount technology via root access (Magisk, KernelSU, or A
     *   If unsure, download the `universal` version.
 2.  Install the downloaded APK on your device.
 3.  Open the app and grant **Root Access** when prompted.
-  if you using KernelSU or KernelSU Next, you might need to restart the app after granting root.
+    *   *Note: If using KernelSU or KernelSU Next, you may need to restart the app after granting root.*
 
 ## How to Use
 
-1.  **Prepare your APK**: Have your custom/patched APK ready on your device storage.
+1.  **Prepare your APK**: Have your custom/patched/unsigned APK ready on your device storage.
 2.  **Select**: Open APK Mounter and tap the **Floating Action Button (+)**.
 3.  **Choose File**: Pick your custom APK file.
 4.  **Confirm**: The app will detect the target package name (e.g., `com.google.android.youtube`). Verify it matches the app you want to replace.
