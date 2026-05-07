@@ -23,6 +23,18 @@ class MainActivity: FlutterActivity() {
                 } else {
                     result.error("INVALID_ARGUMENT", "APK path is null", null)
                 }
+            } else if (call.method == "getApkVersion") {
+                val apkPath = call.argument<String>("apkPath")
+                if (apkPath != null) {
+                    val version = getApkVersion(apkPath)
+                    if (version != null) {
+                        result.success(version)
+                    } else {
+                        result.error("INVALID_APK", "Could not read version from APK", null)
+                    }
+                } else {
+                    result.error("INVALID_ARGUMENT", "APK path is null", null)
+                }
             } else {
                 result.notImplemented()
             }
@@ -33,6 +45,15 @@ class MainActivity: FlutterActivity() {
         return try {
             val packageInfo = packageManager.getPackageArchiveInfo(apkPath, 0)
             packageInfo?.packageName
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun getApkVersion(apkPath: String): String? {
+        return try {
+            val packageInfo = packageManager.getPackageArchiveInfo(apkPath, 0)
+            packageInfo?.versionName
         } catch (e: Exception) {
             null
         }

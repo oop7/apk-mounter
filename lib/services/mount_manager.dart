@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:device_apps/device_apps.dart';
 import 'package:apk_mounter/services/root_api.dart';
 import 'package:apk_mounter/models/mounted_app.dart';
@@ -6,6 +7,8 @@ import 'package:root/root.dart';
 
 /// Service to manage APK mounting operations
 class MountManager {
+  static const MethodChannel _channel = MethodChannel('com.apkmounter.app/apk_info');
+
   final RootAPI _rootAPI = RootAPI();
 
   /// Request root access from the user
@@ -54,19 +57,15 @@ class MountManager {
       final String label = targetApp?.appName ?? packageName;
 
       // Extract the version of the patched APK to make sure it matches the installed version!
-      final String? apkVersionRaw = await Root.exec(cmd: '''dumpsys package archive "$apkPath"''');
-      if (apkVersionRaw != null && apkVersionRaw.isNotEmpty) {
-        // dumpsys package archive outputs "versionName=..." somewhere in its text
-        final RegExp versionRegExp = RegExp(r'versionName=(.*?)(?=\n|$)');
-        final Match? match = versionRegExp.firstMatch(apkVersionRaw);
-        
-        if (match != null && match.groupCount >= 1) {
-          String apkVersion = match.group(1)!.trim();
-          if (apkVersion != version) {
-            print('Version mismatch! Installed: $version, Patched APK: $apkVersion');
-            return false; // Prevent mounting an APK with a different version
-          }
+      try {
+        final String? apkVersion = await _channel.invokeMethod('getApkVersion', {'apkPath': apkPath});
+        if (apkVersion != null && apkVersion != version) {
+          print('Version mismatch! Installed: $version, Patched APK: $apkVersion');
+          return false; // Prevent mounting an APK with a different version
         }
+      } catch (e) {
+        print('Could not read version from APK: $e');
+        // Continue fallback if we can't read it
       }
 
       return await _rootAPI.install(
