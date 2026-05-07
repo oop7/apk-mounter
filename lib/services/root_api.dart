@@ -89,7 +89,7 @@ fi
 
 chcon u:object_r:apk_data_file:s0 "$base_path"
 mount -o bind "$base_path" "$stock_path"
-'''
+''';
 
   static const String _modulePropTemplate = r'''id=__PKG_NAME__-mounter
 name=__LABEL__ Mounter
@@ -97,7 +97,7 @@ version=__VERSION__
 versionCode=0
 author=APK Mounter
 description=Mounts the patched APK on top of the original one (Implementation inspired by Morphe Manager)
-'''
+''';
 
 
   Future<bool> isRooted() async {
