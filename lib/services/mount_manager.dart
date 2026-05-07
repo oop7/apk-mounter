@@ -2,6 +2,8 @@ import 'package:device_apps/device_apps.dart';
 import 'package:apk_mounter/services/root_api.dart';
 import 'package:apk_mounter/models/mounted_app.dart';
 
+import 'package:root/root.dart';
+
 /// Service to manage APK mounting operations
 class MountManager {
   final RootAPI _rootAPI = RootAPI();
@@ -50,6 +52,16 @@ class MountManager {
       final ApplicationWithIcon? targetApp = await DeviceApps.getApp(packageName, true) as ApplicationWithIcon?;
       final String version = targetApp?.versionName ?? 'Unknown';
       final String label = targetApp?.appName ?? packageName;
+
+      // Extract the version of the patched APK to make sure it matches the installed version!
+      final String? apkVersionRaw = await Root.exec(cmd: '''dumpsys package archive "$apkPath" | grep versionName''');
+      if (apkVersionRaw != null && apkVersionRaw.isNotEmpty) {
+        String apkVersion = apkVersionRaw.replaceAll(RegExp(r'.*versionName='), '').trim();
+        if (apkVersion != version) {
+          print('Version mismatch! Installed: $version, Patched APK: $apkVersion');
+          return false; // Prevent mounting an APK with a different version
+        }
+      }
 
       return await _rootAPI.install(
         packageName,
