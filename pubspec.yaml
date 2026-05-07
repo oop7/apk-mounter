@@ -1,7 +1,7 @@
 name: apk_mounter
 description: "A root utility to bind-mount custom APKs over installed apps, preserving data and signatures."
 repository: https://github.com/oop7/apk-mounter
-version: 1.0.0+1
+version: 1.5.0
 publish_to: none
 
 environment:
