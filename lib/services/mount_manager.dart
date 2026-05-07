@@ -54,7 +54,7 @@ class MountManager {
       final String label = targetApp?.appName ?? packageName;
 
       // Extract the version of the patched APK to make sure it matches the installed version!
-      final String? apkVersionRaw = await Root.exec(cmd: '''dumpsys package archive "$apkPath" | grep versionName''');
+      final String? apkVersionRaw = await Root.exec(cmd: '''dumpsys package archive "$apkPath" | grep versionName | head -n 1''');
       if (apkVersionRaw != null && apkVersionRaw.isNotEmpty) {
         String apkVersion = apkVersionRaw.replaceAll(RegExp(r'.*versionName='), '').trim();
         if (apkVersion != version) {
