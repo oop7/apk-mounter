@@ -148,7 +148,11 @@ class _HomeScreenState extends State<HomeScreen> {
             _showSnackBar('Failed to mount APK. Check root permissions.');
           }
         } catch (e) {
-          _showSnackBar('Error: $e');
+          String errorMsg = e.toString();
+          if (errorMsg.startsWith('Exception: ')) {
+             errorMsg = errorMsg.substring('Exception: '.length);
+          }
+          _showSnackBar(errorMsg);
         } finally {
           setState(() => _isLoading = false);
         }

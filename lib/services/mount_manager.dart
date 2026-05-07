@@ -61,9 +61,9 @@ class MountManager {
         final String? apkVersion = await _channel.invokeMethod('getApkVersion', {'apkPath': apkPath});
         if (apkVersion != null && apkVersion != version) {
           print('Version mismatch! Installed: $version, Patched APK: $apkVersion');
-          return false; // Prevent mounting an APK with a different version
+          throw Exception('Version mismatch!\nInstalled: $version\nPatched APK: $apkVersion');
         }
-      } catch (e) {
+      } on PlatformException catch (e) {
         print('Could not read version from APK: $e');
         // Continue fallback if we can't read it
       }
@@ -77,7 +77,7 @@ class MountManager {
       );
     } catch (e) {
       print('Error mounting APK: $e');
-      return false;
+      rethrow;
     }
   }
 
