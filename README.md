@@ -60,7 +60,7 @@ By leveraging Linux bind-mount technology via root access (Magisk, KernelSU, or 
 
 ## Credits
 
-*   Implementation and mounting logic inspired by and derived from [Morphe Manager](https://github.com/morphe-org/morphe-manager).
+*   Implementation and mounting logic inspired by and derived from [Morphe Manager](https://github.com/MorpheApp/morphe-manager).
 *   Earlier mounting logic derived from [ReVanced Manager](https://github.com/ReVanced/revanced-manager), licensed under [GPL v3.0](https://github.com/ReVanced/revanced-manager/blob/main/LICENSE).
 *   Built with [Flutter](https://flutter.dev).
 
