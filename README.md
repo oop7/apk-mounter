@@ -33,7 +33,7 @@ By leveraging Linux bind-mount technology via root access (Magisk, KernelSU, or 
 
 ### Prerequisites
 *   **Rooted Device**: You must have Magisk, KernelSU, or APatch installed.
-*   **Android 12.0+**: Supports Marshmallow and newer versions.
+*   **Android 12.0+**: Supports Android 12 and newer versions.
 
 ### Installation
 1.  Download the latest APK from the [**Releases Page**](https://github.com/oop7/apk-mounter/releases/latest).
