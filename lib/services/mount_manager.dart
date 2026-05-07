@@ -47,7 +47,17 @@ class MountManager {
   /// Mount an APK file for a specific package
   Future<bool> mountAPK(String packageName, String apkPath) async {
     try {
-      return await _rootAPI.install(packageName, '', apkPath);
+      final ApplicationWithIcon? targetApp = await DeviceApps.getApp(packageName, true) as ApplicationWithIcon?;
+      final String version = targetApp?.versionName ?? 'Unknown';
+      final String label = targetApp?.appName ?? packageName;
+
+      return await _rootAPI.install(
+        packageName,
+        '',
+        apkPath,
+        version: version, 
+        label: label,
+      );
     } catch (e) {
       print('Error mounting APK: $e');
       return false;
