@@ -43,6 +43,8 @@ By leveraging Linux bind-mount technology via root access (Magisk, KernelSU, or 
 3.  Open the app and grant **Root Access** when prompted.
     *   *Note: If using KernelSU or KernelSU Next, you may need to restart the app after granting root.*
 
+> **Play Protect notice:** APK Mounter is a sideloaded root utility and requests permissions needed to access APK files and mount them with root. Google Play Protect may show a warning for apps installed outside Google Play. Only install APKs downloaded from this project's official [Releases Page](https://github.com/oop7/apk-mounter/releases/latest), and verify the release signature or checksum when one is provided. Do not install an APK from an untrusted source.
+
 ## How to Use
 
 1.  **Prepare your APK**: Have your custom/patched/unsigned APK ready on your device storage.

@@ -60,12 +60,10 @@ android {
 
     buildTypes {
         release {
-            // Use release signing if keystore is configured, otherwise use debug signing
-            if (System.getenv("KEYSTORE_PASSWORD")) {
-                signingConfig signingConfigs.release
-            } else {
-                signingConfig signingConfigs.debug
+            if (!System.getenv("KEYSTORE_PASSWORD")) {
+                throw new GradleException("KEYSTORE_PASSWORD must be configured for release builds")
             }
+            signingConfig signingConfigs.release
         }
     }
 }
