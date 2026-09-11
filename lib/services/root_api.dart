@@ -21,25 +21,45 @@ base_dir="$module_dir"
 mkdir -p "$module_dir"
 
 log="$module_dir/log.txt"
-rm -f "$log"
-exec >> "$log" 2>&1
+: > "$log"
+
+log_msg() {
+  echo "$*" >> "$log"
+}
 
 base_path="$base_dir/$package_name.apk"
 
+# Wait for the system to fully boot before proceeding.
 until [ "$(getprop sys.boot_completed)" = 1 ]; do sleep 3; done
-until [ -d "/sdcard/Android" ]; do sleep 1; done
 
-grep "$package_name" /proc/mounts | while read -r line; do
-  echo "$line" | cut -d " " -f 2 | sed "s/apk.*/apk/" | xargs -r umount -l
-done
+mount_in_zygote_namespaces() {
+  for zpid in $(pidof zygote64) $(pidof zygote); do
+    if nsenter -t "$zpid" -m mount -o bind "$base_path" "$stock_path" 2>/dev/null; then
+      log_msg "Mounted in zygote namespace: $zpid"
+    else
+      log_msg "Failed to mount in zygote namespace: $zpid"
+    fi
+  done
+}
+
+unmount_from_zygote_namespaces() {
+  for zpid in $(pidof zygote64) $(pidof zygote); do
+    nsenter -t "$zpid" -m umount -l "$stock_path" 2>/dev/null || true
+  done
+}
+
+# Unmount only APK targets belonging to this package.
+awk -v pkg="$package_name" '$2 ~ ("/" pkg "[/-]") && $2 ~ /\.apk$/ { print $2 }' /proc/mounts \
+  | sort -u \
+  | xargs -r umount -l 2>/dev/null
 
 waited=0
 max_wait=180
 stock_path=""
 stock_versions=""
 while [ "$waited" -lt "$max_wait" ]; do
-  stock_path_data="$(pm path "$package_name" | grep base | grep /data/app/ | head -n 1 | sed 's/package://g')"
-  stock_path_fallback="$(pm path "$package_name" | grep base | head -n 1 | sed 's/package://g')"
+  stock_path_data="$(pm path "$package_name" 2>/dev/null | grep base | grep /data/app/ | head -n 1 | sed 's/package://g')"
+  stock_path_fallback="$(pm path "$package_name" 2>/dev/null | grep base | head -n 1 | sed 's/package://g')"
   if [ -z "$stock_path_data" ] && [ -z "$stock_path_fallback" ]; then
     stock_path_cmd="$(cmd package path "$package_name" 2>/dev/null | grep base | head -n 1 | sed 's/package://g')"
   else
@@ -47,14 +67,33 @@ while [ "$waited" -lt "$max_wait" ]; do
   fi
   stock_path="${stock_path_data:-${stock_path_fallback:-$stock_path_cmd}}"
 
-  stock_versions="$(dumpsys package "$package_name" | awk -v pkg="$package_name" '
+  package_dump="$(dumpsys package "$package_name" 2>/dev/null)"
+  stock_versions="$(echo "$package_dump" | awk -v pkg="$package_name" '
     $0 ~ ("Package \\[" pkg "\\]") { in_pkg = 1 }
     $0 ~ /Hidden system package/ { in_pkg = 0 }
     in_pkg && /versionName=/ { sub(/.*versionName=/, ""); print }
   ' | tr -d '\r')"
+  stock_path_dumpsys="$(echo "$package_dump" | awk -v pkg="$package_name" '
+    $0 ~ ("Package \\[" pkg "\\]") { in_pkg = 1 }
+    $0 ~ /Hidden system package/ { in_pkg = 0 }
+    in_pkg && /resourcePath=/ { sub(/.*resourcePath=/, ""); print; exit }
+    in_pkg && /codePath=/ { sub(/.*codePath=/, ""); print; exit }
+  ' | tr -d '\r')"
+
+  if [ -z "$stock_path" ] && [ -n "$stock_path_dumpsys" ]; then
+    if [ -f "$stock_path_dumpsys" ]; then
+      stock_path="$stock_path_dumpsys"
+    elif [ -d "$stock_path_dumpsys" ]; then
+      stock_path="$(find "$stock_path_dumpsys" -maxdepth 1 -name "*.apk" -type f 2>/dev/null | head -n 1)"
+    fi
+  fi
+
+  if [ -n "$stock_versions" ] && ! echo "$stock_versions" | grep -Fxq "$version"; then
+    break
+  fi
 
   if [ -n "$stock_versions" ] && [ -z "$stock_path" ]; then
-    stock_path="$(pm path "$package_name" | grep base | head -n 1 | sed 's/package://g')"
+    stock_path="$(pm path "$package_name" 2>/dev/null | grep base | head -n 1 | sed 's/package://g')"
     if [ -z "$stock_path" ]; then
       stock_path="$(cmd package path "$package_name" 2>/dev/null | grep base | head -n 1 | sed 's/package://g')"
     fi
@@ -67,28 +106,38 @@ while [ "$waited" -lt "$max_wait" ]; do
   sleep 1
 done
 
-echo "base_path: $base_path"
-echo "stock_path: $stock_path"
-echo "base_version: $version"
-echo "stock_versions: $(echo "$stock_versions" | tr '\n' ' ' | xargs)"
+log_msg "base_path: $base_path"
+log_msg "stock_path: $stock_path"
+log_msg "base_version: $version"
+log_msg "stock_versions: $(echo "$stock_versions" | tr '\n' ' ' | xargs)"
 
-if ! echo "$stock_versions" | grep -Fxq "$version"; then
-  echo "Not mounting as versions don't match"
+if [ -n "$stock_versions" ] && ! echo "$stock_versions" | grep -Fxq "$version"; then
+  log_msg "Not mounting as versions don't match"
   exit 1
 fi
 
 if [ -z "$stock_path" ] || [ -z "$stock_versions" ]; then
-  echo "Not mounting as app info could not be loaded"
+  log_msg "Not mounting as app info could not be loaded"
   exit 1
 fi
 
 if [ ! -f "$base_path" ]; then
-  echo "Not mounting as patched APK is missing: $base_path"
+  log_msg "Not mounting as patched APK is missing: $base_path"
   exit 1
 fi
 
-chcon u:object_r:apk_data_file:s0 "$base_path"
-mount -o bind "$base_path" "$stock_path"
+if ! chcon u:object_r:apk_data_file:s0 "$base_path" 2>> "$log"; then
+  log_msg "Failed to set SELinux context"
+fi
+unmount_from_zygote_namespaces
+umount -l "$stock_path" 2>/dev/null || true
+if mount -o bind "$base_path" "$stock_path" 2>> "$log"; then
+  log_msg "Mounted in root namespace"
+else
+  log_msg "Failed to mount in root namespace"
+  exit 1
+fi
+mount_in_zygote_namespaces
 ''';
 
   static const String _modulePropTemplate = r'''id=__PKG_NAME__-mounter
@@ -260,26 +309,10 @@ description=Mounts the patched APK on top of the original one (Implementation in
   }
 
   Future<void> runMountScript(String packageName) async {
-    final String patchedApk = '$_modulesDirPath/$packageName-mounter/$packageName.apk';
-    
-    final String script = r'''
-      stock_path_data="$(pm path "__PKG_NAME__" | grep base | grep /data/app/ | head -n 1 | sed 's/package://g')"
-      stock_path_fallback="$(pm path "__PKG_NAME__" | grep base | head -n 1 | sed 's/package://g')"
-      if [ -z "$stock_path_data" ] && [ -z "$stock_path_fallback" ]; then
-        stock_path_cmd="$(cmd package path "__PKG_NAME__" 2>/dev/null | grep base | head -n 1 | sed 's/package://g')"
-      else
-        stock_path_cmd=""
-      fi
-      stock_path_res="${stock_path_data:-${stock_path_fallback:-$stock_path_cmd}}"
-
-      if [ -n "$stock_path_res" ] && [ -f "$stock_path_res" ]; then
-        chcon u:object_r:apk_data_file:s0 "__PATCHED_APK__"
-        mount -o bind "__PATCHED_APK__" "$stock_path_res"
-        am force-stop "__PKG_NAME__"
-      fi
-    '''.replaceAll('__PKG_NAME__', packageName).replaceAll('__PATCHED_APK__', patchedApk);
-
-    await Root.exec(cmd: script);
+    final String modulePath = '$_modulesDirPath/$packageName-mounter';
+    await Root.exec(
+      cmd: 'sh "$modulePath/service.sh" && am force-stop "$packageName"',
+    );
   }
 
   Future<bool> fileExists(String path) async {
