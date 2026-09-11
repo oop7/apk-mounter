@@ -58,6 +58,16 @@ By leveraging Linux bind-mount technology via root access (Magisk, KernelSU, or 
 *   **Unmount**: Tap the **Delete (Trash)** icon to remove a mount and restore the original app.
 *   **Remount**: Tap the **Refresh** icon to re-apply the mount if it stops working.
 
+## Support
+
+If APK Mounter is useful to you, you can support its development through:
+
+*   **GitHub Sponsors**: [Sponsor on GitHub](https://github.com/sponsors/oop7)
+*   **Buy Me a Coffee**: [Buy me a coffee](https://www.buymeacoffee.com/oop7)
+*   **Direct bank transfer / SWIFT**: Contact me via email at [`oop7_support@proton.me`](mailto:oop7_support@proton.me)
+
+[![Sponsor APK Mounter](https://camo.githubusercontent.com/5763fbb57878cf14ff80257bec337987a9b7f9f4319b1048d9a4cba6eff905a0/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f53706f6e736f722d5954536167652d4541344141413f7374796c653d666f722d7468652d6261646765266c6f676f3d676974687562266c6f676f436f6c6f723d7768697465)](https://github.com/sponsors/oop7)
+
 ## Credits
 
 *   Implementation and mounting logic inspired by and derived from [Morphe Manager](https://github.com/MorpheApp/morphe-manager).

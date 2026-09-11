@@ -25,6 +25,7 @@ dependencies:
       url: https://github.com/validcube/root
       ref: 68e5678a535a2a3344828a14a39017fa74b9098c
   shared_preferences: ^2.5.2
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_lints: ^5.0.0

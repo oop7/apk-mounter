@@ -12,6 +12,7 @@ import 'package:apk_mounter/services/theme_provider.dart';
 import 'package:apk_mounter/widgets/permission_view.dart';
 import 'package:apk_mounter/widgets/no_root_view.dart';
 import 'package:apk_mounter/widgets/mounted_apps_list.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -324,6 +325,55 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _openSponsorLink(Uri uri) async {
+    Navigator.pop(context);
+    if (!await launchUrl(uri)) {
+      _showSnackBar('Could not open the link.');
+    }
+  }
+
+  void _showSupportDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Support APK Mounter'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.favorite_outline),
+              title: const Text('GitHub Sponsors'),
+              onTap: () => _openSponsorLink(
+                Uri.parse('https://github.com/sponsors/oop7'),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.coffee_outlined),
+              title: const Text('Buy Me a Coffee'),
+              onTap: () => _openSponsorLink(
+                Uri.parse('https://www.buymeacoffee.com/oop7'),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.account_balance_outlined),
+              title: const Text('Direct bank transfer / SWIFT'),
+              subtitle: const Text('Contact oop7_support@proton.me'),
+              onTap: () => _openSponsorLink(
+                Uri.parse('mailto:oop7_support@proton.me'),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -347,6 +397,11 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.help_outline),
             onPressed: _showPermissionsHelp,
             tooltip: 'Help',
+          ),
+          IconButton(
+            icon: const Icon(Icons.volunteer_activism_outlined),
+            onPressed: _showSupportDialog,
+            tooltip: 'Support APK Mounter',
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
